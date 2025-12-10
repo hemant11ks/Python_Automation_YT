@@ -1,0 +1,25 @@
+
+source = Path(r"C:\Users\hemant11ks\Desktop\TestFolder\Images")   # <- Change this path
+
+
+api_key = "5661b9fc47ede5605a96514aa9477ac0"  
+492b59152ded581d626e8c62f8e3dc20            # Get free API key from openweathermap.org
+url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+2025-12-08 20:58:35,136 - Automation Script Started
+2025-12-08 20:58:35,184 - Weather API failed
+2025-12-08 21:00:00,111 - Automation Script Started
+2025-12-08 21:00:00,161 - Weather API failed
+2025-12-08 21:00:00,162 - Summary report generated
+2025-12-08 21:00:00,163 - Automation Script Finished Successfully
+2025-12-08 21:01:21,279 - Automation Script Started
+2025-12-08 21:01:21,327 - Weather API failed
+2025-12-08 21:01:21,327 - Summary report generated
+2025-12-08 21:01:21,329 - Automation Script Finished Successfully
+2025-12-08 21:02:50,118 - Automation Script Started
+2025-12-08 21:02:50,172 - Weather API failed
+2025-12-08 21:02:50,173 - Summary report generated
+2025-12-08 21:02:50,174 - Automation Script Finished Successfully
+2025-12-08 21:03:46,343 - Automation Script Started
+2025-12-08 21:03:46,390 - Weather API failed
+2025-12-08 21:03:46,391 - Summary report generated
+2025-12-08 21:03:46,392 - Automation Script Finished Successfully

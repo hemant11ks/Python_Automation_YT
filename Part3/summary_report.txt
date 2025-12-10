@@ -1,0 +1,9 @@
+
+================ Automation Summary ================
+
+📂 Folder Organized: C:\Users\hemant11ks\Desktop\TestFolder\Images
+🌦 Weather: Weather Unavailable, N/A°C
+📄 Log file: automation_log.txt
+✔ Script run successfully!
+
+====================================================
