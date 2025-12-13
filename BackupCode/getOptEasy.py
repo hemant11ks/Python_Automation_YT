@@ -1,6 +1,10 @@
 import sys  # Used to access command line arguments (sys.argv) and exit the program
 import getopt  # Used to parse the flags/options
 
+
+# Using Short flags: python script.py -f input.txt -o output.txt
+# Using Long flags: python script.py --file input.txt --output output.txt
+
 try: 
     # --- THE PARSING LINE ---
     # 1. sys.argv[1:]: We take the input list but skip the script name.
