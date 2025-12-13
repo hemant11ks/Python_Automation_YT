@@ -1,0 +1,78 @@
+2025-12-13 21:40:31,616 - INFO - File Organizer Script Started
+2025-12-13 21:40:31,619 - INFO - Moved demo1.jpg -> Images
+2025-12-13 21:40:31,621 - INFO - Moved demo1.png -> Images
+2025-12-13 21:40:31,624 - INFO - Moved demo1.rar -> Archives
+2025-12-13 21:40:31,626 - INFO - Moved demo1.zip -> Archives
+2025-12-13 21:40:31,629 - INFO - Moved demo2.jpg -> Images
+2025-12-13 21:40:31,631 - INFO - Moved demo2.rar -> Archives
+2025-12-13 21:40:31,635 - INFO - Moved demo2.zip -> Archives
+2025-12-13 21:40:31,638 - INFO - Moved file1.docx -> Documents
+2025-12-13 21:40:31,638 - INFO - Skipped file: file1.pptx
+2025-12-13 21:40:31,652 - INFO - Moved file1.txt -> Documents
+2025-12-13 21:40:31,652 - INFO - Skipped file: file1.xlsx
+2025-12-13 21:40:31,655 - INFO - Moved file2.docx -> Documents
+2025-12-13 21:40:31,655 - INFO - Skipped file: file2.pptx
+2025-12-13 21:40:31,658 - INFO - Moved file2.txt -> Documents
+2025-12-13 21:40:31,658 - INFO - Skipped file: file2.xlsx
+2025-12-13 21:40:31,661 - INFO - Moved file3.txt -> Documents
+2025-12-13 21:40:31,662 - INFO - File Organizer Script Completed
+2025-12-13 21:58:18,082 - INFO - File Organizer Script Started
+2025-12-13 21:58:18,083 - ERROR - Provided folder does not exist
+2025-12-13 21:58:51,007 - INFO - File Organizer Script Started
+2025-12-13 21:58:51,011 - INFO - Moved demo1.jpg -> Images
+2025-12-13 21:58:51,011 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,025 - INFO - Moved demo1.png -> Images
+2025-12-13 21:58:51,026 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,026 - INFO - Skipped file: demo1.rar
+2025-12-13 21:58:51,026 - INFO - Skipped file: demo1.rar
+2025-12-13 21:58:51,026 - INFO - Skipped file: demo1.rar
+2025-12-13 21:58:51,026 - INFO - Skipped file: demo1.rar
+2025-12-13 21:58:51,030 - INFO - Moved demo1.rar -> Archives
+2025-12-13 21:58:51,030 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,030 - INFO - Skipped file: demo1.zip
+2025-12-13 21:58:51,031 - INFO - Skipped file: demo1.zip
+2025-12-13 21:58:51,031 - INFO - Skipped file: demo1.zip
+2025-12-13 21:58:51,031 - INFO - Skipped file: demo1.zip
+2025-12-13 21:58:51,033 - INFO - Moved demo1.zip -> Archives
+2025-12-13 21:58:51,034 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,037 - INFO - Moved demo2.jpg -> Images
+2025-12-13 21:58:51,038 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,038 - INFO - Skipped file: demo2.rar
+2025-12-13 21:58:51,038 - INFO - Skipped file: demo2.rar
+2025-12-13 21:58:51,038 - INFO - Skipped file: demo2.rar
+2025-12-13 21:58:51,038 - INFO - Skipped file: demo2.rar
+2025-12-13 21:58:51,042 - INFO - Moved demo2.rar -> Archives
+2025-12-13 21:58:51,044 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,044 - INFO - Skipped file: demo2.zip
+2025-12-13 21:58:51,045 - INFO - Skipped file: demo2.zip
+2025-12-13 21:58:51,045 - INFO - Skipped file: demo2.zip
+2025-12-13 21:58:51,045 - INFO - Skipped file: demo2.zip
+2025-12-13 21:58:51,048 - INFO - Moved demo2.zip -> Archives
+2025-12-13 21:58:51,048 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,048 - INFO - Skipped file: file1.docx
+2025-12-13 21:58:51,052 - INFO - Moved file1.docx -> Documents
+2025-12-13 21:58:51,053 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,053 - INFO - Skipped file: file1.pptx
+2025-12-13 21:58:51,055 - INFO - Moved file1.pptx -> Documents
+2025-12-13 21:58:51,058 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,059 - INFO - Skipped file: file1.txt
+2025-12-13 21:58:51,063 - INFO - Moved file1.txt -> Documents
+2025-12-13 21:58:51,063 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,064 - INFO - Skipped file: file1.xlsx
+2025-12-13 21:58:51,067 - INFO - Moved file1.xlsx -> Documents
+2025-12-13 21:58:51,068 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,068 - INFO - Skipped file: file2.docx
+2025-12-13 21:58:51,070 - INFO - Moved file2.docx -> Documents
+2025-12-13 21:58:51,070 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,070 - INFO - Skipped file: file2.pptx
+2025-12-13 21:58:51,074 - INFO - Moved file2.pptx -> Documents
+2025-12-13 21:58:51,074 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,075 - INFO - Skipped file: file2.txt
+2025-12-13 21:58:51,078 - INFO - Moved file2.txt -> Documents
+2025-12-13 21:58:51,079 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,079 - INFO - Skipped file: file2.xlsx
+2025-12-13 21:58:51,082 - INFO - Moved file2.xlsx -> Documents
+2025-12-13 21:58:51,082 - INFO - File Organizer Script Completed
+2025-12-13 21:58:51,082 - INFO - Skipped file: file3.txt
+2025-12-13 21:58:51,085 - INFO - Moved file3.txt -> Documents
+2025-12-13 21:58:51,086 - INFO - File Organizer Script Completed
