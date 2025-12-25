@@ -11,7 +11,7 @@ WHAT THIS SCRIPT DOES:
 4. Adds business status (High / Medium / Low)
 5. Creates a summary sheet
 6. Applies conditional formatting (colors)
-7. Creates Excel charts (Bar + Pie)
+7. Creates Excel charts (Bar chart + Pie chart)
 8. Saves final professional Excel file
 
 INPUT  FILE : sales_data.xlsx
@@ -23,10 +23,10 @@ OUTPUT FILE : Final_Excel_Report.xlsx
 # IMPORT REQUIRED LIBRARIES
 # ============================================================
 
-# pandas is used for reading and processing Excel data
+# pandas is used to read Excel and work with tabular data
 import pandas as pd
 
-# load_workbook is used to reopen Excel for formatting and charts
+# openpyxl is used to format Excel files and create charts
 from openpyxl import load_workbook
 
 # PatternFill is used to apply background colors to Excel cells
@@ -40,10 +40,10 @@ from openpyxl.chart import BarChart, PieChart, Reference
 # FILE CONFIGURATION
 # ============================================================
 
-# Input Excel file name
+# Name of input Excel file
 INPUT_FILE = "sales_data.xlsx"
 
-# Output Excel file name
+# Name of output Excel file
 OUTPUT_FILE = "Final_Excel_Report.xlsx"
 
 
@@ -51,8 +51,8 @@ OUTPUT_FILE = "Final_Excel_Report.xlsx"
 # STEP 1: READ EXCEL FILE
 # ============================================================
 
-# Read Excel file into pandas DataFrame
-# DataFrame = Excel table inside Python
+# Read Excel file into a pandas DataFrame
+# Think of DataFrame as an Excel table inside Python
 df = pd.read_excel(INPUT_FILE)
 
 print("Excel file loaded successfully")
@@ -62,8 +62,8 @@ print("Excel file loaded successfully")
 # STEP 2: DATA CLEANING
 # ============================================================
 
-# Remove rows that contain empty values
-# inplace=True modifies the original DataFrame
+# dropna() removes rows where ANY column is empty
+# inplace=True means modify original DataFrame
 df.dropna(inplace=True)
 
 print("Missing rows removed")
@@ -73,8 +73,8 @@ print("Missing rows removed")
 # STEP 3: ADD CALCULATED COLUMN
 # ============================================================
 
-# Create new column "Total Amount"
-# Formula: Quantity * Price
+# Create a new column "Total Amount"
+# Formula used: Quantity * Price
 df["Total Amount"] = df["Quantity"] * df["Price"]
 
 print("Total Amount column created")
@@ -86,12 +86,8 @@ print("Total Amount column created")
 
 def sales_status(amount):
     """
-    Decide sales category based on Total Amount.
-
-    Rules:
-    - >= 100000 -> High
-    - >= 50000  -> Medium
-    - < 50000   -> Low
+    This function decides sales category
+    based on the Total Amount.
     """
     if amount >= 100000:
         return "High"
@@ -101,7 +97,7 @@ def sales_status(amount):
         return "Low"
 
 
-# Apply business logic to each row
+# apply() runs the function on each value of Total Amount
 df["Sales Status"] = df["Total Amount"].apply(sales_status)
 
 print("Sales Status column added")
@@ -111,7 +107,7 @@ print("Sales Status column added")
 # STEP 5: CREATE SUMMARY REPORT
 # ============================================================
 
-# Create a separate DataFrame for summary
+# Create a separate DataFrame for management summary
 summary_df = pd.DataFrame({
     "Metric": [
         "Total Revenue",
@@ -122,7 +118,7 @@ summary_df = pd.DataFrame({
     ],
     "Value": [
         df["Total Amount"].sum(),                    # Sum of sales
-        len(df),                                     # Number of orders
+        len(df),                                     # Total rows
         (df["Sales Status"] == "High").sum(),        # High count
         (df["Sales Status"] == "Medium").sum(),      # Medium count
         (df["Sales Status"] == "Low").sum()          # Low count
@@ -136,17 +132,17 @@ print("Summary report generated")
 # STEP 6: WRITE DATA TO EXCEL
 # ============================================================
 
-# ExcelWriter allows multiple sheets in one Excel file
+# ExcelWriter allows writing multiple sheets in one Excel file
 with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
 
-    # Write main sales data
+    # Write sales data to first sheet
     df.to_excel(
         writer,
         sheet_name="Sales Data",
         index=False
     )
 
-    # Write summary data
+    # Write summary data to second sheet
     summary_df.to_excel(
         writer,
         sheet_name="Summary",
@@ -160,13 +156,13 @@ print("Data written to Excel file")
 # STEP 7: APPLY CONDITIONAL FORMATTING
 # ============================================================
 
-# Load the Excel file again for formatting
+# Load Excel file again to apply formatting
 wb = load_workbook(OUTPUT_FILE)
 
-# Select Sales Data sheet
+# Select the "Sales Data" sheet
 ws = wb["Sales Data"]
 
-# Define background color styles using HEX color codes
+# Define background colors using HEX color codes
 
 # Green color for High sales
 high_fill = PatternFill(
@@ -189,13 +185,13 @@ low_fill = PatternFill(
     fill_type="solid"
 )
 
-# Loop through each data row (skip header row)
+# Loop through data rows (skip header row)
 for row in range(2, ws.max_row + 1):
 
-    # Column F contains "Sales Status"
+    # Column F contains Sales Status
     status_cell = ws[f"F{row}"]
 
-    # Apply color based on status value
+    # Apply color based on cell value
     if status_cell.value == "High":
         status_cell.fill = high_fill
     elif status_cell.value == "Medium":
@@ -210,67 +206,83 @@ print("Conditional formatting applied")
 # STEP 8: CREATE EXCEL CHARTS
 # ============================================================
 
-# Create a new sheet named "Charts"
+# Create a new worksheet to hold charts
 chart_sheet = wb.create_sheet(title="Charts")
 
 
-# -------------------------------
-# BAR CHART: Product vs Total Amount
-# -------------------------------
+# ------------------------------------------------------------
+# BAR CHART: PRODUCT vs TOTAL AMOUNT
+# ------------------------------------------------------------
 
+# Create an empty BarChart object
 bar_chart = BarChart()
+
+# Set chart title
 bar_chart.title = "Product Wise Total Sales"
+
+# Set X-axis and Y-axis titles
 bar_chart.x_axis.title = "Product"
 bar_chart.y_axis.title = "Total Amount"
 
-# Data for bar chart (Total Amount column - Column E)
+# Select numeric data (Total Amount column = Column E)
 data = Reference(
-    ws,
-    min_col=5,
-    min_row=1,
-    max_row=ws.max_row
+    ws,                 # Sales Data sheet
+    min_col=5,          # Column E
+    min_row=1,          # Include header
+    max_row=ws.max_row  # Till last data row
 )
 
-# Categories for bar chart (Product column - Column B)
+# Select category labels (Product column = Column B)
 categories = Reference(
-    ws,
-    min_col=2,
-    min_row=2,
+    ws,                 # Sales Data sheet
+    min_col=2,          # Column B
+    min_row=2,          # Skip header
     max_row=ws.max_row
 )
 
+# Attach numeric data to chart
 bar_chart.add_data(data, titles_from_data=True)
+
+# Attach category labels to chart
 bar_chart.set_categories(categories)
 
+# Place bar chart at cell A1 in Charts sheet
 chart_sheet.add_chart(bar_chart, "A1")
 
 
-# -------------------------------
-# PIE CHART: Sales Status Distribution
-# -------------------------------
+# ------------------------------------------------------------
+# PIE CHART: SALES STATUS DISTRIBUTION
+# ------------------------------------------------------------
 
+# Create an empty PieChart object
 pie_chart = PieChart()
+
+# Set pie chart title
 pie_chart.title = "Sales Status Distribution"
 
-# Labels (High, Medium, Low)
+# Select labels (High / Medium / Low) from Summary sheet
 labels = Reference(
-    wb["Summary"],
-    min_col=1,
-    min_row=4,
-    max_row=6
+    wb["Summary"],      # Summary sheet
+    min_col=1,          # Metric column
+    min_row=4,          # High
+    max_row=6           # Low
 )
 
-# Values for pie chart
+# Select numeric values from Summary sheet
 data = Reference(
-    wb["Summary"],
-    min_col=2,
+    wb["Summary"],      # Summary sheet
+    min_col=2,          # Value column
     min_row=4,
     max_row=6
 )
 
+# Attach numeric data to pie chart
 pie_chart.add_data(data, titles_from_data=False)
+
+# Attach labels to pie chart
 pie_chart.set_categories(labels)
 
+# Place pie chart below bar chart
 chart_sheet.add_chart(pie_chart, "A20")
 
 
@@ -278,7 +290,7 @@ chart_sheet.add_chart(pie_chart, "A20")
 # FINAL SAVE
 # ============================================================
 
-# Save the Excel file with all formatting and charts
+# Save Excel file with all formatting and charts
 wb.save(OUTPUT_FILE)
 
 print("Charts created successfully")
