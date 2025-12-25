@@ -23,20 +23,16 @@ OUTPUT FILE : Final_Excel_Report.xlsx
 # IMPORT REQUIRED LIBRARIES
 # ============================================================
 
-# pandas:
-# Used to read Excel files and perform data operations
+# pandas is used for reading and processing Excel data
 import pandas as pd
 
-# load_workbook:
-# Used to open an Excel file again for formatting & charts
+# load_workbook is used to reopen Excel for formatting and charts
 from openpyxl import load_workbook
 
-# PatternFill:
-# Used to apply background colors to Excel cells
+# PatternFill is used to apply background colors to Excel cells
 from openpyxl.styles import PatternFill
 
-# Chart classes:
-# Used to create Excel charts using Python
+# Chart-related classes from openpyxl
 from openpyxl.chart import BarChart, PieChart, Reference
 
 
@@ -44,10 +40,10 @@ from openpyxl.chart import BarChart, PieChart, Reference
 # FILE CONFIGURATION
 # ============================================================
 
-# Name of the input Excel file
+# Input Excel file name
 INPUT_FILE = "sales_data.xlsx"
 
-# Name of the output Excel file
+# Output Excel file name
 OUTPUT_FILE = "Final_Excel_Report.xlsx"
 
 
@@ -55,45 +51,33 @@ OUTPUT_FILE = "Final_Excel_Report.xlsx"
 # STEP 1: READ EXCEL FILE
 # ============================================================
 
-# Read Excel file and load it into a DataFrame
+# Read Excel file into pandas DataFrame
 # DataFrame = Excel table inside Python
 df = pd.read_excel(INPUT_FILE)
 
-# Print confirmation message
-print("📥 Excel file loaded successfully")
-
-# At this point:
-# df contains columns: Date, Product, Quantity, Price
+print("Excel file loaded successfully")
 
 
 # ============================================================
 # STEP 2: DATA CLEANING
 # ============================================================
 
-# dropna() removes rows with missing (empty) values
-# inplace=True means original DataFrame is modified
+# Remove rows that contain empty values
+# inplace=True modifies the original DataFrame
 df.dropna(inplace=True)
 
-# Print confirmation message
-print("🧹 Missing rows removed")
-
-# Result:
-# Rows where Quantity or Price was empty are deleted
+print("Missing rows removed")
 
 
 # ============================================================
 # STEP 3: ADD CALCULATED COLUMN
 # ============================================================
 
-# Create a new column called "Total Amount"
+# Create new column "Total Amount"
 # Formula: Quantity * Price
 df["Total Amount"] = df["Quantity"] * df["Price"]
 
-# Print confirmation message
-print("🧮 Total Amount column created")
-
-# Example:
-# Quantity = 2, Price = 50000 → Total Amount = 100000
+print("Total Amount column created")
 
 
 # ============================================================
@@ -102,44 +86,33 @@ print("🧮 Total Amount column created")
 
 def sales_status(amount):
     """
-    This function decides the sales category
-    based on Total Amount value.
+    Decide sales category based on Total Amount.
 
-    BUSINESS RULES:
-    - amount >= 100000 → High
-    - amount >= 50000  → Medium
-    - amount < 50000   → Low
+    Rules:
+    - >= 100000 -> High
+    - >= 50000  -> Medium
+    - < 50000   -> Low
     """
-
-    # If sales amount is very high
     if amount >= 100000:
         return "High"
-
-    # If sales amount is medium
     elif amount >= 50000:
         return "Medium"
-
-    # If sales amount is low
     else:
         return "Low"
 
 
-# apply() runs the function on each row value
-# It applies sales_status() to every Total Amount
+# Apply business logic to each row
 df["Sales Status"] = df["Total Amount"].apply(sales_status)
 
-# Print confirmation message
-print("🏷 Sales Status column added")
+print("Sales Status column added")
 
 
 # ============================================================
 # STEP 5: CREATE SUMMARY REPORT
 # ============================================================
 
-# Create a new DataFrame for summary information
+# Create a separate DataFrame for summary
 summary_df = pd.DataFrame({
-
-    # First column: Description
     "Metric": [
         "Total Revenue",
         "Total Orders",
@@ -147,103 +120,90 @@ summary_df = pd.DataFrame({
         "Medium Sales Orders",
         "Low Sales Orders"
     ],
-
-    # Second column: Calculated values
     "Value": [
-        df["Total Amount"].sum(),                    # Sum of all sales
-        len(df),                                     # Total number of records
-        (df["Sales Status"] == "High").sum(),        # Count of High sales
-        (df["Sales Status"] == "Medium").sum(),      # Count of Medium sales
-        (df["Sales Status"] == "Low").sum()          # Count of Low sales
+        df["Total Amount"].sum(),                    # Sum of sales
+        len(df),                                     # Number of orders
+        (df["Sales Status"] == "High").sum(),        # High count
+        (df["Sales Status"] == "Medium").sum(),      # Medium count
+        (df["Sales Status"] == "Low").sum()          # Low count
     ]
 })
 
-# Print confirmation message
-print("📊 Summary report generated")
+print("Summary report generated")
 
 
 # ============================================================
 # STEP 6: WRITE DATA TO EXCEL
 # ============================================================
 
-# ExcelWriter allows writing multiple sheets into one Excel file
+# ExcelWriter allows multiple sheets in one Excel file
 with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
 
-    # Write cleaned sales data to first sheet
+    # Write main sales data
     df.to_excel(
         writer,
-        sheet_name="Sales Data",     # Sheet name
-        index=False                  # Do not write index column
+        sheet_name="Sales Data",
+        index=False
     )
 
-    # Write summary data to second sheet
+    # Write summary data
     summary_df.to_excel(
         writer,
         sheet_name="Summary",
         index=False
     )
 
-# Print confirmation message
-print("💾 Data written to Excel")
+print("Data written to Excel file")
 
 
 # ============================================================
 # STEP 7: APPLY CONDITIONAL FORMATTING
 # ============================================================
 
-# Load the newly created Excel file
+# Load the Excel file again for formatting
 wb = load_workbook(OUTPUT_FILE)
 
-# Select the "Sales Data" sheet
+# Select Sales Data sheet
 ws = wb["Sales Data"]
 
-# ------------------------------------------------------------
-# DEFINE CELL COLORS USING HEX CODES
-# ------------------------------------------------------------
+# Define background color styles using HEX color codes
 
-# Light green color for High sales
+# Green color for High sales
 high_fill = PatternFill(
-    start_color="C6EFCE",   # HEX code for green
-    end_color="C6EFCE",     # Same color for full fill
-    fill_type="solid"       # Solid background
+    start_color="C6EFCE",
+    end_color="C6EFCE",
+    fill_type="solid"
 )
 
-# Light yellow color for Medium sales
+# Yellow color for Medium sales
 medium_fill = PatternFill(
-    start_color="FFEB9C",   # HEX code for yellow
+    start_color="FFEB9C",
     end_color="FFEB9C",
     fill_type="solid"
 )
 
-# Light red color for Low sales
+# Red color for Low sales
 low_fill = PatternFill(
-    start_color="FFC7CE",   # HEX code for red
+    start_color="FFC7CE",
     end_color="FFC7CE",
     fill_type="solid"
 )
 
-# ------------------------------------------------------------
-# APPLY COLORS ROW BY ROW
-# ------------------------------------------------------------
-
-# Start loop from row 2 (row 1 contains headers)
+# Loop through each data row (skip header row)
 for row in range(2, ws.max_row + 1):
 
-    # Access Sales Status cell (Column F)
+    # Column F contains "Sales Status"
     status_cell = ws[f"F{row}"]
 
-    # Apply background color based on status value
+    # Apply color based on status value
     if status_cell.value == "High":
         status_cell.fill = high_fill
-
     elif status_cell.value == "Medium":
         status_cell.fill = medium_fill
-
     elif status_cell.value == "Low":
         status_cell.fill = low_fill
 
-# Print confirmation message
-print("🎨 Conditional formatting applied")
+print("Conditional formatting applied")
 
 
 # ============================================================
@@ -254,55 +214,45 @@ print("🎨 Conditional formatting applied")
 chart_sheet = wb.create_sheet(title="Charts")
 
 
-# ------------------------------------------------------------
-# BAR CHART: PRODUCT vs TOTAL AMOUNT
-# ------------------------------------------------------------
+# -------------------------------
+# BAR CHART: Product vs Total Amount
+# -------------------------------
 
-# Create bar chart object
 bar_chart = BarChart()
-
-# Set chart title
 bar_chart.title = "Product Wise Total Sales"
-
-# Set X and Y axis titles
 bar_chart.x_axis.title = "Product"
 bar_chart.y_axis.title = "Total Amount"
 
-# Select Total Amount column (Column E)
+# Data for bar chart (Total Amount column - Column E)
 data = Reference(
     ws,
-    min_col=5,          # Column E
-    min_row=1,          # Include header
+    min_col=5,
+    min_row=1,
     max_row=ws.max_row
 )
 
-# Select Product column (Column B)
+# Categories for bar chart (Product column - Column B)
 categories = Reference(
     ws,
-    min_col=2,          # Column B
-    min_row=2,          # Skip header
+    min_col=2,
+    min_row=2,
     max_row=ws.max_row
 )
 
-# Add data and categories to chart
 bar_chart.add_data(data, titles_from_data=True)
 bar_chart.set_categories(categories)
 
-# Add bar chart to Charts sheet
 chart_sheet.add_chart(bar_chart, "A1")
 
 
-# ------------------------------------------------------------
-# PIE CHART: SALES STATUS DISTRIBUTION
-# ------------------------------------------------------------
+# -------------------------------
+# PIE CHART: Sales Status Distribution
+# -------------------------------
 
-# Create pie chart object
 pie_chart = PieChart()
-
-# Set chart title
 pie_chart.title = "Sales Status Distribution"
 
-# Labels (High / Medium / Low)
+# Labels (High, Medium, Low)
 labels = Reference(
     wb["Summary"],
     min_col=1,
@@ -318,11 +268,9 @@ data = Reference(
     max_row=6
 )
 
-# Add data and labels
 pie_chart.add_data(data, titles_from_data=False)
 pie_chart.set_categories(labels)
 
-# Add pie chart to Charts sheet
 chart_sheet.add_chart(pie_chart, "A20")
 
 
@@ -330,9 +278,8 @@ chart_sheet.add_chart(pie_chart, "A20")
 # FINAL SAVE
 # ============================================================
 
-# Save the Excel file with all changes
+# Save the Excel file with all formatting and charts
 wb.save(OUTPUT_FILE)
 
-# Final confirmation messages
-print("📊 Charts created successfully")
-print("✅ Excel Automation Completed Successfully")
+print("Charts created successfully")
+print("Excel Automation Completed Successfully")
