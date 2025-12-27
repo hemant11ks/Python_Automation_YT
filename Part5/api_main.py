@@ -10,6 +10,10 @@
 # 6. Displays a clean weather report in terminal
 # ---------------------------------------------------------
 
+#“In this video, we are going to build a real-world Python automation project using an external API.
+#You will understand how APIs work, how Python communicates with servers, how JSON data is handled, and how to write production-ready error handling code.
+#This video is beginner-friendly and also useful for interviews and backend concepts.”
+
 # load_dotenv is used to load environment variables
 # from a .env file into the system environment
 from dotenv import load_dotenv
