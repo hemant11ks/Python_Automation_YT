@@ -1,5 +1,5 @@
 # ---------------------------------------------------------
-# Python Weather CLI Tool using OpenWeatherMap API
+# Python Weather CLI Tool using OpenWeatherMap API application 
 # ---------------------------------------------------------
 # WHAT THIS SCRIPT DOES:
 # 1. Takes a city name from the user
