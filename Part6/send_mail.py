@@ -1,5 +1,5 @@
 """
-Enterprise HR Attendance Automation
+Enterprise HR Attendance Automation System
 
 Features:
 - Attendance alert (< 8 hrs)
@@ -10,6 +10,9 @@ Features:
 - Logging to file + console
 """
 
+# ==============================
+# IMPORTS
+# ==============================
 import smtplib
 import pandas as pd
 import os
@@ -30,10 +33,10 @@ formatter = logging.Formatter(
 )
 
 # File handler
-file_handler = logging.FileHandler("attendance.log")
+file_handler = logging.FileHandler("attendance.log", encoding="utf-8")
 file_handler.setFormatter(formatter)
 
-# Console handler
+# Console handler (NO emoji-safe)
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 
@@ -49,7 +52,7 @@ SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 if not SENDER_EMAIL or not SENDER_PASSWORD:
-    raise ValueError("❌ SENDER_EMAIL or SENDER_PASSWORD missing in .env file")
+    raise ValueError("SENDER_EMAIL or SENDER_PASSWORD missing in .env file")
 
 # ==============================
 # EMAIL CONFIG
@@ -84,7 +87,15 @@ def is_valid_email(email):
 def validate_email_list(email_list, label):
     for email in email_list:
         if not is_valid_email(email):
-            raise ValueError(f"❌ Invalid {label} email detected: {email}")
+            raise ValueError(f"Invalid {label} email detected: {email}")
+
+# Example :
+# is_valid_email("hemant@gmail")        # ❌ no domain extension
+# is_valid_email("hemant@.com")         # ❌ domain missing
+# is_valid_email("hemant.com")          # ❌ no @
+# is_valid_email("@gmail.com")          # ❌ username missing
+# is_valid_email("hemant @gmail.com")   # ❌ space
+# is_valid_email(12345)                 # ❌ not a string
 
 # ==============================
 # READ ATTENDANCE
@@ -95,9 +106,9 @@ def read_attendance():
 
         missing_cols = REQUIRED_COLUMNS - set(df.columns)
         if missing_cols:
-            raise ValueError(f"❌ Missing columns in Excel: {missing_cols}")
+            raise ValueError(f"Missing columns in Excel: {missing_cols}")
 
-        # 🔥 CRITICAL: Clean email column
+        # Clean Email column
         df["Email"] = (
             df["Email"]
             .astype(str)
@@ -106,11 +117,11 @@ def read_attendance():
             .str.lower()
         )
 
-        logging.info("✅ Attendance file read and cleaned successfully")
+        logging.info("Attendance file loaded successfully")
         return df
 
     except Exception as e:
-        logging.error(f"❌ Failed to read Excel: {e}")
+        logging.error(f"Failed to read Excel: {e}")
         raise
 
 # ==============================
@@ -124,9 +135,11 @@ def get_short_hours(df):
 # ==============================
 def html_table_with_highlight(df):
     def color_hours(val):
-        return "color:red;font-weight:bold;" if val < MIN_WORK_HOURS else ""
+        if val < MIN_WORK_HOURS:
+            return "color:red;font-weight:bold;"
+        return ""
 
-    styled_df = df.style.applymap(color_hours, subset=["Total Hours"])
+    styled_df = df.style.map(color_hours, subset=["Total Hours"])
     return styled_df.to_html(index=False)
 
 # ==============================
@@ -154,17 +167,17 @@ def send_email(to, cc, subject, html_body, attachment=None):
                     filename=Path(attachment).name
                 )
 
-        logging.info(f"📤 Sending email to: {recipients}")
+        logging.info(f"Sending email to {recipients}")
 
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg, to_addrs=recipients)
 
-        logging.info("✅ Email sent successfully")
+        logging.info("Email sent successfully")
 
     except Exception as e:
-        logging.error(f"❌ Email sending failed: {e}")
+        logging.error(f"Email sending failed: {e}")
 
 # ==============================
 # AUTO MAIL TO EMPLOYEE
@@ -173,7 +186,7 @@ def send_employee_mail(row):
     email = row["Email"]
 
     if not is_valid_email(email):
-        logging.warning(f"⚠️ Skipping invalid employee email: {email}")
+        logging.warning(f"Skipping invalid employee email: {email}")
         return
 
     html = f"""
@@ -181,20 +194,15 @@ def send_employee_mail(row):
     <body>
         <h3 style="color:red;">Attendance Alert</h3>
         <p>Hello <b>{row['Name']}</b>,</p>
-
         <p>Your working hours on <b>{row['Date']}</b> were
         <b style="color:red;">{row['Total Hours']} hrs</b>.</p>
-
-        <p>Please ensure a minimum of <b>{MIN_WORK_HOURS} working hours</b>.</p>
-
+        <p>Please ensure a minimum of <b>{MIN_WORK_HOURS} hours</b>.</p>
         <br>
         Regards,<br>
-        HR Automation System 🤖
+        HR Automation System
     </body>
     </html>
     """
-
-    logging.info(f"📧 Preparing employee email for {email}")
 
     send_email(
         to=[email],
@@ -211,19 +219,18 @@ def generate_monthly_summary(df):
         summary = df.groupby("Name")["Total Hours"].mean().reset_index()
         summary.rename(columns={"Total Hours": "Avg Monthly Hours"}, inplace=True)
         summary.to_excel(MONTHLY_REPORT, index=False)
-        logging.info("📊 Monthly summary report generated")
+        logging.info("Monthly summary report generated")
 
     except Exception as e:
-        logging.error(f"❌ Monthly summary failed: {e}")
+        logging.error(f"Monthly summary failed: {e}")
 
 # ==============================
 # MAIN AUTOMATION
 # ==============================
 def run_automation():
     try:
-        logging.info("🚀 Attendance Automation Started")
+        logging.info("Automation Started")
 
-        # Validate HR & Manager emails
         validate_email_list(HR_EMAILS, "HR")
         validate_email_list(MANAGER_EMAILS, "Manager")
 
@@ -231,7 +238,7 @@ def run_automation():
         short_df = get_short_hours(df)
 
         if short_df.empty:
-            logging.info("✅ No short-hour employees found")
+            logging.info("No short-hour employees found")
             return
 
         html_table = html_table_with_highlight(short_df)
@@ -254,17 +261,15 @@ def run_automation():
             attachment=EXCEL_FILE
         )
 
-        # Employee emails
         for _, row in short_df.iterrows():
             send_employee_mail(row)
 
-        # Monthly summary
         generate_monthly_summary(df)
 
-        logging.info("🎉 Attendance Automation Completed Successfully")
+        logging.info("Automation Completed Successfully")
 
     except Exception as e:
-        logging.critical(f"🔥 Automation failed: {e}")
+        logging.critical(f"Automation failed: {e}")
 
 # ==============================
 # EXECUTION
