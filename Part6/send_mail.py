@@ -1,422 +1,234 @@
-"""
-===========================================================
-ENTERPRISE HR ATTENDANCE AUTOMATION SYSTEM (PYTHON)
-===========================================================
-
-WHAT THIS SCRIPT DOES:
------------------------------------------------------------
-1. Reads attendance data from an Excel file
-2. Identifies employees working less than minimum hours
-3. Sends alert email to HR & Managers
-4. Sends warning email to each employee
-5. Generates a monthly summary Excel report
-6. Logs every important step (file + console)
-
-THIS IS A REAL-WORLD, PRODUCTION-STYLE SCRIPT
------------------------------------------------------------
-"""
-
 # =========================================================
-# 1️⃣ IMPORT REQUIRED PYTHON MODULES
+# PYTHON SCRIPT: SEND EXCEL DATA VIA EMAIL WITH ATTACHMENT
 # =========================================================
+# This script demonstrates:
+# 1. Reading data from an Excel file
+# 2. Filtering data using business rules
+# 3. Converting Excel data to HTML for email
+# 4. Sending HTML email using SMTP
+# 5. Attaching Excel file in the email
+# =========================================================
+
+
+# ---------------------------------------------------------
+# 1️⃣ IMPORT REQUIRED MODULES
+# ---------------------------------------------------------
 
 import smtplib
-# smtplib → Used to connect to SMTP server and send emails
+# smtplib:
+# This module is used to connect Python with an email server
+# (SMTP server) and send emails programmatically.
 
 import pandas as pd
-# pandas → Used for reading Excel files and data manipulation
+# pandas:
+# Used to read Excel files and manipulate tabular data
+# (very common in real-world automation).
 
 import os
-# os → Used to read environment variables securely
-
-import logging
-# logging → Used instead of print() for professional logging
-
-import re
-# re → Used for regex-based email validation
+# os:
+# Used to securely read environment variables
+# like email and password from .env file.
 
 from email.message import EmailMessage
-# EmailMessage → Helps create structured email messages (HTML + attachment)
+# EmailMessage:
+# Helps create professional emails with subject,
+# HTML content, and attachments.
 
 from pathlib import Path
-# Path → Safely extracts file names for attachments
+# Path:
+# Used to safely extract the filename from file path
+# while attaching files.
 
 from dotenv import load_dotenv
-# load_dotenv → Loads sensitive data from .env file
+# load_dotenv:
+# Loads environment variables from a .env file.
 
-# =========================================================
-# 2️⃣ LOGGING CONFIGURATION (FILE + CONSOLE)
-# =========================================================
 
-# Create root logger
-logger = logging.getLogger()
+# ---------------------------------------------------------
+# 2️⃣ LOAD EMAIL CREDENTIALS SECURELY
+# ---------------------------------------------------------
 
-# Set minimum log level
-# INFO → logs info, warnings, errors, critical messages
-logger.setLevel(logging.INFO)
-
-# Define common log format
-formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(message)s"
-)
-
-# -------- FILE LOGGING --------
-# Logs will be saved in attendance.log
-file_handler = logging.FileHandler("attendance.log", encoding="utf-8")
-file_handler.setFormatter(formatter)
-
-# -------- CONSOLE LOGGING --------
-# Logs will also be shown in terminal
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-
-# Attach handlers to logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-# =========================================================
-# 3️⃣ LOAD ENVIRONMENT VARIABLES (.env FILE)
-# =========================================================
-
-# Load .env file into environment
+# Load variables from .env file into environment
 load_dotenv()
 
-# Read email credentials securely
+# Read email credentials
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
-# Fail fast if credentials are missing
+# If credentials are missing, stop execution immediately
 if not SENDER_EMAIL or not SENDER_PASSWORD:
-    raise ValueError("SENDER_EMAIL or SENDER_PASSWORD missing in .env file")
+    raise ValueError("SENDER_EMAIL or SENDER_PASSWORD not found")
 
-# =========================================================
-# 4️⃣ EMAIL CONFIGURATION
-# =========================================================
 
-# Gmail SMTP configuration
+# ---------------------------------------------------------
+# 3️⃣ SMTP SERVER CONFIGURATION
+# ---------------------------------------------------------
+
+# Gmail SMTP server details
 SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587  # TLS port
 
-# HR & Manager email lists
-# These receive the consolidated attendance report
-HR_EMAILS = ["hemantkumarsingh455@gmail.com"]
-MANAGER_EMAILS = ["hemantkumarsingh455@gmail.com"]
+# Port 587 is used for TLS (secure email sending)
+SMTP_PORT = 587
 
-# =========================================================
-# 5️⃣ FILE & BUSINESS RULE CONFIGURATION
-# =========================================================
 
-# Excel input file
+# ---------------------------------------------------------
+# 4️⃣ EXCEL FILE CONFIGURATION
+# ---------------------------------------------------------
+
+# Excel file name
 EXCEL_FILE = "data.xlsx"
 
 # Sheet name inside Excel
 SHEET_NAME = "Attendance"
 
-# Monthly summary output file
-MONTHLY_REPORT = "monthly_summary.xlsx"
-
-# Required columns in Excel file
-REQUIRED_COLUMNS = {
-    "Employee ID", "Name", "Email",
-    "Date", "Check-in", "Check-out", "Total Hours"
-}
-
-# Minimum required working hours per day
+# Business rule:
+# Minimum working hours required per day
 MIN_WORK_HOURS = 8
 
-# =========================================================
-# 6️⃣ EMAIL VALIDATION LOGIC
-# =========================================================
 
-def is_valid_email(email):
+# ---------------------------------------------------------
+# 5️⃣ READ & FILTER EXCEL DATA
+# ---------------------------------------------------------
+
+def read_excel_data():
     """
     PURPOSE:
-    --------------------------------------------------------
-    Validates a single email address using regex
-
-    RETURNS:
-    --------------------------------------------------------
-    True  → if email format is valid
-    False → if email is invalid
+    -----------------------------------------------
+    Reads attendance data from Excel file and
+    returns employees who worked less than
+    required minimum hours.
     """
 
-    # Regex pattern defining a valid email structure
-    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    # Read Excel sheet into pandas DataFrame
+    df = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME)
 
-    # Check:
-    # 1. email must be string
-    # 2. email must match regex pattern
-    return isinstance(email, str) and re.match(pattern, email)
+    # Filter employees who worked less than minimum hours
+    short_hours_df = df[df["Total Hours"] < MIN_WORK_HOURS]
 
-def validate_email_list(email_list, label):
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Validates a list of email addresses (HR / Manager)
+    # Return filtered data
+    return short_hours_df
 
-    FAIL-FAST PRINCIPLE:
-    --------------------------------------------------------
-    If even ONE email is invalid → stop program immediately
-    """
 
-    for email in email_list:
-        if not is_valid_email(email):
-            raise ValueError(f"Invalid {label} email detected: {email}")
+# ---------------------------------------------------------
+# 6️⃣ CONVERT DATAFRAME TO HTML TABLE
+# ---------------------------------------------------------
 
-# =========================================================
-# 7️⃣ READ & CLEAN ATTENDANCE EXCEL FILE
-# =========================================================
-
-def read_attendance():
+def dataframe_to_html(df):
     """
     PURPOSE:
-    --------------------------------------------------------
-    Reads attendance data from Excel and cleans it
+    -----------------------------------------------
+    Converts pandas DataFrame into an HTML table
+    so it can be embedded directly inside email body.
     """
 
-    try:
-        # Read Excel sheet into pandas DataFrame
-        df = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME)
+    def highlight_hours(value):
+        """
+        This function is applied to each value
+        in 'Total Hours' column.
 
-        # Ensure required columns exist
-        missing_cols = REQUIRED_COLUMNS - set(df.columns)
-        if missing_cols:
-            raise ValueError(f"Missing columns in Excel: {missing_cols}")
-
-        # Clean Email column to avoid delivery issues
-        df["Email"] = (
-            df["Email"]
-            .astype(str)                 # Convert to string
-            .str.strip()                 # Remove leading/trailing spaces
-            .str.replace(r"\s+", "", regex=True)  # Remove internal spaces
-            .str.lower()                 # Convert to lowercase
-        )
-
-        logging.info("Attendance file loaded and cleaned successfully")
-        return df
-
-    except Exception as e:
-        logging.error(f"Failed to read Excel file: {e}")
-        raise
-
-# =========================================================
-# 8️⃣ FILTER EMPLOYEES WITH SHORT HOURS
-# =========================================================
-
-def get_short_hours(df):
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Returns employees working less than minimum hours
-    """
-
-    return df[df["Total Hours"] < MIN_WORK_HOURS]
-
-# =========================================================
-# 9️⃣ CREATE HTML TABLE WITH COLOR HIGHLIGHTING
-# =========================================================
-
-def html_table_with_highlight(df):
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Converts DataFrame to HTML table
-    Highlights short working hours in RED
-    """
-
-    def color_hours(value):
-        # Apply red color if hours < required minimum
+        If hours < required minimum,
+        the value will appear in RED color.
+        """
         if value < MIN_WORK_HOURS:
             return "color:red;font-weight:bold;"
         return ""
 
-    # Apply styling safely (future-proof)
-    styled_df = df.style.map(color_hours, subset=["Total Hours"])
+    # Apply styling to DataFrame
+    styled_df = df.style.map(
+        highlight_hours,
+        subset=["Total Hours"]
+    )
 
-    # Convert styled table to HTML
+    # Convert styled DataFrame into HTML
     return styled_df.to_html(index=False)
 
-# =========================================================
-# 🔟 SEND EMAIL FUNCTION (GENERIC)
-# =========================================================
 
-def send_email(to, cc, subject, html_body, attachment=None):
+# ---------------------------------------------------------
+# 7️⃣ SEND EMAIL WITH HTML BODY & ATTACHMENT
+# ---------------------------------------------------------
+
+def send_email(to, cc, subject, html_body, attachment):
     """
     PURPOSE:
-    --------------------------------------------------------
-    Sends HTML email with optional attachment
+    -----------------------------------------------
+    Sends an email with:
+    - HTML content
+    - Excel attachment
     """
 
-    try:
-        # Create email object
-        msg = EmailMessage()
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = ", ".join(to)
-        msg["Cc"] = ", ".join(cc)
-        msg["Subject"] = subject
+    # Create EmailMessage object
+    msg = EmailMessage()
 
-        # Plain text fallback
-        msg.set_content("Please view this email in HTML format.")
+    # ---------------- EMAIL HEADERS ----------------
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = ", ".join(to)
+    msg["Cc"] = ", ".join(cc)
+    msg["Subject"] = subject
 
-        # HTML email content
-        msg.add_alternative(html_body, subtype="html")
+    # Plain text fallback (important for email clients)
+    msg.set_content(
+        "This email contains HTML content. "
+        "Please view it in a supported email client."
+    )
 
-        # All recipients
-        recipients = to + cc
+    # Add HTML version of email body
+    msg.add_alternative(html_body, subtype="html")
 
-        # Attach file if provided
-        if attachment:
-            with open(attachment, "rb") as f:
-                msg.add_attachment(
-                    f.read(),
-                    maintype="application",
-                    subtype="octet-stream",
-                    filename=Path(attachment).name
-                )
+    # ---------------- ATTACHMENT LOGIC ----------------
+    # Open Excel file in binary mode
+    with open(attachment, "rb") as file:
+        msg.add_attachment(
+            file.read(),                      # File content as bytes
+            maintype="application",           # Generic file type
+            subtype="octet-stream",           # Works for any file
+            filename=Path(attachment).name    # Extract filename
+        )
 
-        logging.info(f"Sending email to {recipients}")
+    # Combine all recipients
+    recipients = to + cc
 
-        # Connect to SMTP server securely
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()  # Secure connection
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(msg, to_addrs=recipients)
+    # ---------------- SMTP CONNECTION ----------------
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()                     # Secure connection
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg, to_addrs=recipients)
 
-        logging.info("Email sent successfully")
+    print("✅ Email sent successfully with attachment")
 
-    except Exception as e:
-        logging.error(f"Email sending failed: {e}")
 
-# =========================================================
-# 1️⃣1️⃣ SEND WARNING EMAIL TO EMPLOYEE
-# =========================================================
+# ---------------------------------------------------------
+# 8️⃣ MAIN EXECUTION FLOW
+# ---------------------------------------------------------
 
-def send_employee_mail(row):
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Sends personalized warning email to employee
-    """
+if __name__ == "__main__":
 
-    email = row["Email"]
+    # Step 1: Read Excel data
+    short_hours_df = read_excel_data()
 
-    # Skip invalid employee emails
-    if not is_valid_email(email):
-        logging.warning(f"Skipping invalid employee email: {email}")
-        return
+    # If no employee has short hours, stop program
+    if short_hours_df.empty:
+        print("No employees found with short working hours")
+        exit()
 
-    # HTML email body
-    html = f"""
+    # Step 2: Convert Excel data into HTML table
+    html_table = dataframe_to_html(short_hours_df)
+
+    # Step 3: Create HTML email body
+    html_body = f"""
     <html>
     <body>
-        <h3 style="color:red;">Attendance Alert</h3>
-        <p>Hello <b>{row['Name']}</b>,</p>
-
-        <p>Your working hours on <b>{row['Date']}</b> were
-        <b style="color:red;">{row['Total Hours']} hrs</b>.</p>
-
-        <p>Please ensure a minimum of <b>{MIN_WORK_HOURS} hours</b>.</p>
-
-        <br>
-        Regards,<br>
-        HR Automation System
+        <h2 style="color:red;">Attendance Alert</h2>
+        <p>Employees who worked less than {MIN_WORK_HOURS} hours:</p>
+        {html_table}
     </body>
     </html>
     """
 
+    # Step 4: Send email WITH Excel attachment
     send_email(
-        to=[email],
+        to=["example@gmail.com"],
         cc=[],
-        subject="[Daily] Attendance Warning",
-        html_body=html
+        subject="Attendance Report",
+        html_body=html_body,
+        attachment=EXCEL_FILE
     )
-
-# =========================================================
-# 1️⃣2️⃣ MONTHLY SUMMARY REPORT
-# =========================================================
-
-def generate_monthly_summary(df):
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Generates average monthly working hours per employee
-    """
-
-    try:
-        summary = df.groupby("Name")["Total Hours"].mean().reset_index()
-        summary.rename(columns={"Total Hours": "Avg Monthly Hours"}, inplace=True)
-        summary.to_excel(MONTHLY_REPORT, index=False)
-
-        logging.info("Monthly summary report generated")
-
-    except Exception as e:
-        logging.error(f"Monthly summary generation failed: {e}")
-
-# =========================================================
-# 1️⃣3️⃣ MAIN AUTOMATION CONTROLLER
-# =========================================================
-
-def run_automation():
-    """
-    PURPOSE:
-    --------------------------------------------------------
-    Controls the entire automation flow
-    """
-
-    try:
-        logging.info("Automation Started")
-
-        # Validate HR & Manager emails
-        validate_email_list(HR_EMAILS, "HR")
-        validate_email_list(MANAGER_EMAILS, "Manager")
-
-        # Read attendance data
-        df = read_attendance()
-
-        # Filter short-hour employees
-        short_df = get_short_hours(df)
-
-        if short_df.empty:
-            logging.info("No short-hour employees found")
-            return
-
-        # Create HTML report for HR
-        html_table = html_table_with_highlight(short_df)
-
-        hr_html = f"""
-        <html>
-        <body>
-            <h2 style="color:red;">Attendance Alert</h2>
-            <p>Employees with less than {MIN_WORK_HOURS} hours:</p>
-            {html_table}
-        </body>
-        </html>
-        """
-
-        # Send consolidated email to HR & Managers
-        send_email(
-            to=HR_EMAILS,
-            cc=MANAGER_EMAILS,
-            subject="Attendance Alert Report",
-            html_body=hr_html,
-            attachment=EXCEL_FILE
-        )
-
-        # Send individual warning emails
-        for _, row in short_df.iterrows():
-            send_employee_mail(row)
-
-        # Generate monthly summary
-        generate_monthly_summary(df)
-
-        logging.info("Automation Completed Successfully")
-
-    except Exception as e:
-        logging.critical(f"Automation failed: {e}")
-
-# =========================================================
-# 1️⃣4️⃣ SCRIPT ENTRY POINT
-# =========================================================
-
-if __name__ == "__main__":
-    run_automation()
